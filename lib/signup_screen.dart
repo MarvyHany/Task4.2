@@ -1,209 +1,123 @@
 import 'package:flutter/material.dart';
-import 'otp_screen.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'bloc/auth_bloc.dart';
 
-class SignUpScreen extends StatefulWidget {
-  const SignUpScreen({super.key});
+class SignUpScreenWithBloc extends StatefulWidget {
+  const SignUpScreenWithBloc({super.key});
 
   @override
-  State<SignUpScreen> createState() => _SignUpScreenState();
+  State<SignUpScreenWithBloc> createState() => _SigninScreenWithBlocState();
 }
 
-class _SignUpScreenState extends State<SignUpScreen> {
+class _SigninScreenWithBlocState extends State<SignUpScreenWithBloc> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _passwordController = TextEditingController();
-  bool _obscure = true;
+  final _name = TextEditingController();
+  final _email = TextEditingController();
+  final _phone = TextEditingController();
+  final _password = TextEditingController();
+  final _confirmPassword = TextEditingController();
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
-    _phoneController.dispose();
-    _passwordController.dispose();
+    _name.dispose();
+    _email.dispose();
+    _phone.dispose();
+    _password.dispose();
+    _confirmPassword.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: const Color(0xff1380A5),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  const Text(
-                    'إنشاء حساب',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 30),
-
-
-                  TextFormField(
-                    controller: _nameController,
-                    decoration: InputDecoration(
-                      labelText: 'الاسم الكامل',
-                      prefixIcon: const Icon(Icons.person),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'من فضلك أدخل الاسم';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 15),
-
-
-                  TextFormField(
-                    controller: _emailController,
-                    decoration: InputDecoration(
-                      labelText: 'البريد الإلكتروني',
-                      prefixIcon: const Icon(Icons.email),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    keyboardType: TextInputType.emailAddress,
-                    validator: (value) {
-                      if (value == null || !value.contains('@')) {
-                        return 'من فضلك أدخل بريد إلكتروني صحيح';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 15),
-
-
-                  TextFormField(
-                    controller: _phoneController,
-                    decoration: InputDecoration(
-                      labelText: 'رقم الموبايل ',
-                      prefixIcon: const Icon(Icons.phone),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    keyboardType: TextInputType.phone,
-                    validator: (value) {
-                      if (value == null || value.length < 10) {
-                        return 'من فضلك أدخل رقم صحيح';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 15),
-
-
-                  TextFormField(
-                    controller: _passwordController,
-                    obscureText: _obscure,
-                    decoration: InputDecoration(
-                      labelText: 'كلمة المرور',
-                      prefixIcon: const Icon(Icons.lock),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscure ? Icons.visibility : Icons.visibility_off,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscure = !_obscure;
-                          });
-                        },
-                      ),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.length < 6) {
-                        return 'كلمة المرور يجب أن تكون على الأقل 6 أحرف';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-
-
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const OtpScreen(),
-                            ),
-                          );
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: const Color(0xff1380A5),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        'إنشاء حساب',
-                        style: TextStyle(fontSize: 18),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 15),
-
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        'لديك حساب بالفعل؟',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        child: const Text(
-                          'تسجيل الدخول',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
+    return BlocProvider(
+      create: (_) => SignUpBloc(),
+      child: Scaffold(
+        backgroundColor: Colors.grey[100],
+        appBar: AppBar(
+          backgroundColor: Colors.deepPurple,
+          title: const Text("Register"),
+          centerTitle: true,
         ),
+        body: BlocConsumer<SignUpBloc, SignUpState>(
+          listener: (context, state) {
+            if (state is SignUpFailure) {
+              Fluttertoast.showToast(msg: state.error, backgroundColor: Colors.red);
+            } else if (state is SignUpSuccess) {
+              Fluttertoast.showToast(
+                  msg: "Welcome ${state.email}", backgroundColor: Colors.green);
+            }
+          },
+          builder: (context, state) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    const SizedBox(height: 30),
+                    _buildTextField(controller: _name, label: "Name", icon: Icons.person, validator: (val) => val!.isEmpty ? "Enter your name" : null),
+                    const SizedBox(height: 15),
+                    _buildTextField(controller: _phone, label: "Phone Number", icon: Icons.phone, keyboardType: TextInputType.phone, validator: (val) => val!.isEmpty ? "Enter your phone" : null),
+                    const SizedBox(height: 15),
+                    _buildTextField(controller: _email, label: "Email", icon: Icons.email, keyboardType: TextInputType.emailAddress, validator: (val) => val!.contains('@') ? null : "Enter a valid email"),
+                    const SizedBox(height: 15),
+                    _buildTextField(controller: _password, label: "Password", icon: Icons.lock, obscure: true, validator: (val) => val!.length < 6 ? "Min 6 characters" : null),
+                    const SizedBox(height: 15),
+                    _buildTextField(controller: _confirmPassword, label: "Confirm Password", icon: Icons.lock_outline, obscure: true, validator: (val) => val != _password.text ? "Passwords do not match" : null),
+                    const SizedBox(height: 30),
+                    state is SignUpLoading
+                        ? const CircularProgressIndicator()
+                        : ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.deepPurple,
+                              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            ),
+                            onPressed: () {
+                              if (_formKey.currentState!.validate()) {
+                                context.read<SignUpBloc>().add(
+                                      SignUpSubmittedEvent(
+                                        email: _email.text.trim(),
+                                        password: _password.text.trim(),
+                                        name: _name.text.trim(),
+                                        phone: _phone.text.trim(),
+                                      ),
+                                    );
+                              }
+                            },
+                            child: const Text("Register", style: TextStyle(fontSize: 16, color: Colors.white)),
+                          ),
+                    const SizedBox(height: 20),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    bool obscure = false,
+    TextInputType keyboardType = TextInputType.text,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      obscureText: obscure,
+      keyboardType: keyboardType,
+      validator: validator,
+      decoration: InputDecoration(
+        prefixIcon: Icon(icon),
+        labelText: label,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        filled: true,
+        fillColor: Colors.white,
       ),
     );
   }

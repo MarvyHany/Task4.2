@@ -1,182 +1,112 @@
 import 'package:flutter/material.dart';
-import 'home_screen.dart';
+import 'package:flutter_application_1/bloc/bloc/login_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+import 'signup_screen.dart'; // عدّلي حسب مكان الملف
+import 'bloc/auth_bloc.dart';
+
+
+class LoginScreenWithBloc extends StatefulWidget {
+  const LoginScreenWithBloc({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<LoginScreenWithBloc> createState() => _LoginScreenWithBlocState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenWithBlocState extends State<LoginScreenWithBloc> {
   final _formKey = GlobalKey<FormState>();
-  final _phoneController = TextEditingController();
-  final _passwordController = TextEditingController();
-  bool _obscure = true;
+  final _email = TextEditingController();
+  final _password = TextEditingController();
 
   @override
   void dispose() {
-    _phoneController.dispose();
-    _passwordController.dispose();
+    _email.dispose();
+    _password.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 32,
-                ),
-                decoration: const BoxDecoration(
-                  color: Color(0xff1380A5),
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(36),
-                    topRight: Radius.circular(36),
-                  ),
-                ),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text(
-                        'أهلاً بك نحن سعداء بعودتك\nمن فضلك قم بتسجيل الدخول',
-                        style: TextStyle(
-                          fontSize: 20,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          height: 1.5,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 24),
-                      TextFormField(
-                        controller: _phoneController,
-                        decoration: const InputDecoration(
-                          filled: true,
-                          fillColor: Colors.white,
-                          hintText: 'رقم الهاتف',
-                          prefixIcon: Icon(Icons.phone),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(12)),
-                          ),
-                        ),
-                        keyboardType: TextInputType.phone,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'من فضلك أدخل رقم الهاتف';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _passwordController,
-                        obscureText: _obscure,
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: Colors.white,
-                          hintText: 'كلمة المرور',
-                          prefixIcon: const Icon(Icons.lock),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscure
-                                  ? Icons.visibility
-                                  : Icons.visibility_off,
-                            ),
+    return BlocProvider(
+      create: (_) => LoginBloc(),
+      child: Scaffold(
+        appBar: AppBar(title: const Text("Login")),
+        body: BlocConsumer<LoginBloc, LoginState>(
+          listener: (context, state) {
+            if (state is LoginSuccess) {
+              Fluttertoast.showToast(
+                  msg: "Login Successful", backgroundColor: Colors.green);
+            } else if (state is LoginFailure) {
+              Fluttertoast.showToast(
+                  msg: state.error, backgroundColor: Colors.red);
+
+              if (state.error.contains("Redirecting")) {
+                // بعد شوية ينقله للتسجيل
+                Future.delayed(const Duration(seconds: 2), () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const LoginScreenWithBloc(),
+                    ),
+                  );
+                });
+              }
+            }
+          },
+          builder: (context, state) {
+            return Padding(
+              padding: const EdgeInsets.all(16),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextFormField(
+                      controller: _email,
+                      decoration: const InputDecoration(labelText: 'Email'),
+                      validator: (value) =>
+                          value!.contains('@') ? null : 'Enter a valid email',
+                    ),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _password,
+                      obscureText: true,
+                      decoration: const InputDecoration(labelText: 'Password'),
+                      validator: (value) =>
+                          value!.length < 6 ? 'Min 6 characters' : null,
+                    ),
+                    const SizedBox(height: 30),
+                    state is LoginLoading
+                        ? const CircularProgressIndicator()
+                        : ElevatedButton(
                             onPressed: () {
-                              setState(() {
-                                _obscure = !_obscure;
-                              });
+                              if (_formKey.currentState!.validate()) {
+                                context.read<LoginBloc>().add(
+                                      LoginSubmittedEvent(
+                                        email: _email.text.trim(),
+                                        password: _password.text.trim(),
+                                      ),
+                                    );
+                              }
                             },
+                            child: const Text("Login"),
                           ),
-                          border: const OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(12)),
-                          ),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'من فضلك أدخل كلمة المرور';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: () {},
-                          child: const Text(
-                            'هل نسيت كلمة المرور؟',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const HomeScreen(),
-                                ),
-                              );
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: const Color(0xff1380A5),
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: const Text(
-                            'تسجيل الدخول',
-                            style: TextStyle(fontSize: 18),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text(
-                            'ليس لديك حساب؟ ',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            child: const Text(
-                              'إنشاء حساب',
-                              style: TextStyle(
-                                color: Colors.white,
-                                decoration: TextDecoration.underline,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const SignUpScreenWithBloc()),
+                        );
+                      },
+                      child: const Text("Don't have an account? Register"),
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ],
+            );
+          },
         ),
       ),
     );
